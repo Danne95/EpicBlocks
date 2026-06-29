@@ -1,0 +1,99 @@
+name: Android Release
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-apk:
+    name: Build Android APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Analyze
+        run: flutter analyze
+
+      - name: Run tests
+        run: flutter test
+
+      - name: Decode release keystore
+        env:
+          ANDROID_RELEASE_KEYSTORE_BASE64: ${{ secrets.ANDROID_RELEASE_KEYSTORE_BASE64 }}
+        run: |
+          if [ -z "$ANDROID_RELEASE_KEYSTORE_BASE64" ]; then
+            echo "ANDROID_RELEASE_KEYSTORE_BASE64 secret is required for public APK releases."
+            exit 1
+          fi
+
+          printf '%s' "$ANDROID_RELEASE_KEYSTORE_BASE64" | base64 --decode > android/app/release-keystore.jks
+
+      - name: Build release APK
+        env:
+          ANDROID_RELEASE_KEYSTORE_PATH: release-keystore.jks
+          ANDROID_RELEASE_STORE_PASSWORD: ${{ secrets.ANDROID_RELEASE_STORE_PASSWORD }}
+          ANDROID_RELEASE_KEY_PASSWORD: ${{ secrets.ANDROID_RELEASE_KEY_PASSWORD }}
+          ANDROID_RELEASE_KEY_ALIAS: ${{ secrets.ANDROID_RELEASE_KEY_ALIAS }}
+        run: flutter build apk --release
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: epicblocks-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+
+  publish-release:
+    name: Publish GitHub Release
+    needs: build-apk
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+
+      - name: Read release version
+        id: version
+        run: |
+          APP_VERSION=$(grep '^version:' pubspec.yaml | awk '{print $2}' | cut -d '+' -f 1)
+          echo "tag=v$APP_VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Download APK
+        uses: actions/download-artifact@v4
+        with:
+          name: epicblocks-apk
+          path: release
+
+      - name: Create or update GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            gh release upload "$RELEASE_TAG" release/app-release.apk#EpicBlocks.apk --clobber
+          else
+            gh release create "$RELEASE_TAG" release/app-release.apk#EpicBlocks.apk --title "EpicBlocks $RELEASE_TAG" --generate-notes --target "$GITHUB_SHA"
+          fi
