@@ -26,8 +26,8 @@ whole app.
 
 - `domain`: board, positions, shapes, placement validation, line clears, and
   scoring.
-- `application`: mutable game state, shape dealing, high score persistence, and
-  loss detection.
+- `application`: mutable game state, shape dealing, active-game persistence,
+  high score persistence, and loss detection.
 - `presentation`: Flutter board, score display, shape tray, drag/drop, and
   game-over UI.
 

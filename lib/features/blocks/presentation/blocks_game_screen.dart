@@ -190,14 +190,14 @@ class _BoardViewState extends State<_BoardView> {
             hitTestBehavior: HitTestBehavior.opaque,
             onWillAcceptWithDetails: (details) {
               return _originForGlobalOffset(
-                    details.data.dragCenterOffset + details.offset,
+                    details.data.placementOffsetInFeedback + details.offset,
                     details.data.shape,
                   ) !=
                   null;
             },
             onMove: (details) {
               final origin = _originForGlobalOffset(
-                details.data.dragCenterOffset + details.offset,
+                details.data.placementOffsetInFeedback + details.offset,
                 details.data.shape,
               );
               setState(() {
@@ -213,7 +213,7 @@ class _BoardViewState extends State<_BoardView> {
             },
             onAcceptWithDetails: (details) async {
               final origin = _originForGlobalOffset(
-                details.data.dragCenterOffset + details.offset,
+                details.data.placementOffsetInFeedback + details.offset,
                 details.data.shape,
               );
               setState(() {
@@ -353,10 +353,19 @@ class _ShapeSlot extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final currentShape = shape;
     final feedbackCellSize = (boardCellSize * 0.92).clamp(26.0, 40.0);
-    final feedbackCenter = Offset(
-      currentShape == null ? 0 : currentShape.width * feedbackCellSize / 2,
-      currentShape == null ? 0 : currentShape.height * feedbackCellSize / 2,
-    );
+    final pointerOffsetInFeedback = currentShape == null
+        ? Offset.zero
+        : liftedShapeDragAnchor(
+            shape: currentShape,
+            feedbackCellSize: feedbackCellSize,
+            liftGap: boardCellSize,
+          );
+    final placementOffsetInFeedback = currentShape == null
+        ? Offset.zero
+        : shapeFeedbackCenter(
+            shape: currentShape,
+            feedbackCellSize: feedbackCellSize,
+          );
     final slot = DecoratedBox(
       decoration: BoxDecoration(
         color: colorScheme.surfaceContainerHighest,
@@ -381,11 +390,13 @@ class _ShapeSlot extends StatelessWidget {
               data: _ShapeDragData(
                 trayIndex: index,
                 shape: currentShape,
-                dragCenterOffset: feedbackCenter,
+                pointerOffsetInFeedback: pointerOffsetInFeedback,
+                placementOffsetInFeedback: placementOffsetInFeedback,
               ),
               affinity: Axis.vertical,
-              dragAnchorStrategy: (_, _, _) => feedbackCenter,
-              feedbackOffset: Offset.zero,
+              dragAnchorStrategy: (_, _, _) => pointerOffsetInFeedback,
+              feedbackOffset:
+                  placementOffsetInFeedback - pointerOffsetInFeedback,
               feedback: Material(
                 color: Colors.transparent,
                 child: _ShapePreview(
@@ -480,12 +491,39 @@ class _ShapeDragData {
   const _ShapeDragData({
     required this.trayIndex,
     required this.shape,
-    required this.dragCenterOffset,
+    required this.pointerOffsetInFeedback,
+    required this.placementOffsetInFeedback,
   });
 
   final int trayIndex;
   final BlockShape shape;
-  final Offset dragCenterOffset;
+  final Offset pointerOffsetInFeedback;
+  final Offset placementOffsetInFeedback;
+}
+
+/// Returns the feedback point held by the pointer for a 1010-style lifted drag.
+@visibleForTesting
+Offset liftedShapeDragAnchor({
+  required BlockShape shape,
+  required double feedbackCellSize,
+  required double liftGap,
+}) {
+  return Offset(
+    shape.width * feedbackCellSize / 2,
+    (shape.height * feedbackCellSize) + liftGap,
+  );
+}
+
+/// Returns the visual feedback center used for board preview and placement.
+@visibleForTesting
+Offset shapeFeedbackCenter({
+  required BlockShape shape,
+  required double feedbackCellSize,
+}) {
+  return Offset(
+    shape.width * feedbackCellSize / 2,
+    shape.height * feedbackCellSize / 2,
+  );
 }
 
 /// Maps a drag pointer to the board origin that centers [shape] under it.

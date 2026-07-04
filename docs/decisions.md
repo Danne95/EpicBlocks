@@ -128,3 +128,36 @@ small previews hard to pick up.
 
 Keeping top-left placement with larger previews was rejected because it would
 still make the visible drop point differ from the player's natural grip point.
+
+## 2026-07-04
+
+### Decision
+
+Lift held shapes above the finger and match placement to the lifted shape's
+board position.
+
+### Reason
+
+This matches the 1010-style drag feel: the player can see the target board
+cells because the held shape is not hidden under the finger, and the board
+preview marks the cells under the lifted shape.
+
+### Alternatives considered
+
+Keeping the held shape centered under the finger was rejected because it hides
+too much of the intended placement area on touch screens.
+
+## 2026-07-04
+
+### Decision
+
+Persist the active EpicBlocks game locally and resume it on app startup.
+
+### Reason
+
+Games can last across multiple play sessions. Closing the app should not force
+the player to abandon an in-progress board.
+
+### Alternatives considered
+
+Only saving the high score was rejected because it loses long-running games.

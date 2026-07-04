@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'dart:math';
 
+import 'package:epic_blocks/features/blocks/domain/block_cell.dart';
 import 'package:epic_blocks/features/blocks/domain/block_position.dart';
 import 'package:epic_blocks/features/blocks/domain/block_shape.dart';
 import 'package:epic_blocks/features/blocks/domain/block_shapes.dart';
@@ -14,6 +16,12 @@ class BlocksController extends ChangeNotifier {
     : _random = random ?? Random();
 
   static const _highScoreKey = 'blocks.high_score';
+  static const _stateVersionKey = 'blocks.state.version';
+  static const _scoreKey = 'blocks.state.score';
+  static const _isGameOverKey = 'blocks.state.is_game_over';
+  static const _trayKey = 'blocks.state.tray';
+  static const _boardKey = 'blocks.state.board';
+  static const _stateVersion = 1;
 
   /// Preferences storage.
   final SharedPreferences preferences;
@@ -40,18 +48,19 @@ class BlocksController extends ChangeNotifier {
   /// Whether no remaining available shape can fit.
   bool get isGameOver => _isGameOver;
 
-  /// Loads local high score and starts a game.
+  /// Loads local high score and resumes the saved game when available.
   Future<void> load() async {
     _highScore = preferences.getInt(_highScoreKey) ?? 0;
-    newGame(notify: false);
+    if (!_restoreSavedGame()) {
+      _startNewGame();
+      await _saveGameState();
+    }
   }
 
   /// Starts a new game while preserving high score.
   void newGame({bool notify = true}) {
-    _board = BlocksBoard.empty();
-    _availableShapes = _dealShapes();
-    _score = 0;
-    _isGameOver = false;
+    _startNewGame();
+    unawaited(_saveGameState());
     if (notify) {
       notifyListeners();
     }
@@ -84,6 +93,7 @@ class BlocksController extends ChangeNotifier {
     }
 
     _isGameOver = !_hasAnyMove();
+    await _saveGameState();
     notifyListeners();
     return true;
   }
@@ -103,5 +113,89 @@ class BlocksController extends ChangeNotifier {
       (_) => BlockShapes.all[_random.nextInt(BlockShapes.all.length)],
       growable: false,
     );
+  }
+
+  void _startNewGame() {
+    _board = BlocksBoard.empty();
+    _availableShapes = _dealShapes();
+    _score = 0;
+    _isGameOver = false;
+  }
+
+  bool _restoreSavedGame() {
+    if (preferences.getInt(_stateVersionKey) != _stateVersion) {
+      return false;
+    }
+
+    final score = preferences.getInt(_scoreKey);
+    final isGameOver = preferences.getBool(_isGameOverKey);
+    final trayShapeIds = preferences.getStringList(_trayKey);
+    final boardShapeIds = preferences.getStringList(_boardKey);
+    if (score == null ||
+        isGameOver == null ||
+        trayShapeIds == null ||
+        boardShapeIds == null ||
+        trayShapeIds.length != 3 ||
+        boardShapeIds.length != BlocksBoard.size * BlocksBoard.size) {
+      return false;
+    }
+
+    final tray = <BlockShape?>[];
+    for (final shapeId in trayShapeIds) {
+      final shape = _shapeFromId(shapeId);
+      if (shapeId.isNotEmpty && shape == null) {
+        return false;
+      }
+      tray.add(shape);
+    }
+
+    final rows = <List<BlockCell?>>[];
+    for (var row = 0; row < BlocksBoard.size; row += 1) {
+      final cells = <BlockCell?>[];
+      for (var column = 0; column < BlocksBoard.size; column += 1) {
+        final shapeId = boardShapeIds[(row * BlocksBoard.size) + column];
+        final shape = _shapeFromId(shapeId);
+        if (shapeId.isNotEmpty && shape == null) {
+          return false;
+        }
+        cells.add(shape == null ? null : BlockCell(shape: shape));
+      }
+      rows.add(List<BlockCell?>.of(cells, growable: false));
+    }
+
+    _board = BlocksBoard(List<List<BlockCell?>>.of(rows, growable: false));
+    _availableShapes = List<BlockShape?>.of(tray, growable: false);
+    _score = score;
+    _isGameOver = isGameOver;
+    return true;
+  }
+
+  Future<void> _saveGameState() async {
+    await Future.wait([
+      preferences.setInt(_stateVersionKey, _stateVersion),
+      preferences.setInt(_scoreKey, _score),
+      preferences.setBool(_isGameOverKey, _isGameOver),
+      preferences.setStringList(
+        _trayKey,
+        _availableShapes.map((shape) => shape?.id ?? '').toList(),
+      ),
+      preferences.setStringList(_boardKey, [
+        for (final row in _board.cells)
+          for (final cell in row) cell?.shape.id ?? '',
+      ]),
+    ]);
+  }
+
+  BlockShape? _shapeFromId(String shapeId) {
+    if (shapeId.isEmpty) {
+      return null;
+    }
+
+    for (final shape in BlockShapes.all) {
+      if (shape.id == shapeId) {
+        return shape;
+      }
+    }
+    return null;
   }
 }

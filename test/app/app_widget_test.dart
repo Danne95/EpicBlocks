@@ -90,6 +90,30 @@ void main() {
     );
   });
 
+  test('lifted drag anchor places feedback above the pointer', () {
+    final square = BlockShapes.all.firstWhere(
+      (shape) => shape.id == 'square_2',
+    );
+    final anchor = liftedShapeDragAnchor(
+      shape: square,
+      feedbackCellSize: 30,
+      liftGap: 30,
+    );
+
+    expect(anchor.dx, 30);
+    expect(anchor.dy, 90);
+  });
+
+  test('shape feedback center drives board preview and placement', () {
+    final square = BlockShapes.all.firstWhere(
+      (shape) => shape.id == 'square_2',
+    );
+    final center = shapeFeedbackCenter(shape: square, feedbackCellSize: 30);
+
+    expect(center.dx, 30);
+    expect(center.dy, 30);
+  });
+
   testWidgets(
     'settings opens from app-bar cog and shows patch notes and update',
     (tester) async {

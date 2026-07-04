@@ -3,15 +3,23 @@ class AppMetadata {
   const AppMetadata._();
 
   /// Human-readable app version.
-  static const versionLabel = '1.0.1';
+  static const versionLabel = '1.0.2';
 
   /// Player-facing patch notes for the current app version.
   static const patchNotes = [
     PatchNote(
+      title: 'Release 1.0.2',
+      changes: [
+        'Matched the board preview and placement to the lifted shape position.',
+        'Improved drag detection near the board edge.',
+      ],
+    ),
+    PatchNote(
       title: 'Release 1.0.1',
       changes: [
+        'Saved active games so long sessions can continue after reopening.',
         'Improved drag pickup so shapes are easier to grab from the tray.',
-        'Centered held shapes and placement previews around the drag position.',
+        'Matched placement previews to the lifted shape position.',
         'Improved board placement handling so valid drops are not ignored.',
       ],
     ),

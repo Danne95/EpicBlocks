@@ -4,7 +4,8 @@
 
 1. `main.dart` initializes Flutter bindings.
 2. Settings load from SharedPreferences.
-3. The game controller loads the local high score and creates a new game.
+3. The game controller loads the local high score and resumes the saved game
+   when one exists.
 4. The app starts in the selected theme.
 5. The game screen is shown by default.
 
@@ -12,7 +13,8 @@
 
 1. The player sees a 10 by 10 board and three available shapes.
 2. The player drags a shape from the tray onto the board.
-   The placement preview is centered around the drag position.
+   The held shape floats above the finger, and the placement preview follows
+   the lifted shape's board position.
 3. The controller accepts the move only if every cell fits and lands on empty
    board cells.
 4. Accepted moves add placement points, clear full rows and columns, and add
@@ -20,7 +22,8 @@
 5. A used shape disappears from the tray.
 6. When all three tray slots are used, three new shapes are dealt.
 7. The game ends when no remaining tray shape can fit anywhere on the board.
-8. The player can start a new game from the game-over panel.
+8. The active board, score, and shape tray are saved locally after moves.
+9. The player can start a new game from the game-over panel.
 
 ## Settings
 

@@ -8,7 +8,8 @@ and clearing full rows and columns.
 ## Player actions
 
 - Drag one of the three available shapes onto the board.
-- Use the centered preview to choose where the shape will land.
+- Use the preview under the lifted shape to choose where the shape will land.
+- The held shape is lifted above the finger so the target cells remain visible.
 - Start a new game from the game-over panel.
 - Open Settings from the app-bar cog.
 
@@ -51,3 +52,5 @@ anywhere on the board.
 ## Persistence
 
 High score is saved locally on the device.
+The active board, score, shape tray, and game-over state are also saved locally
+so a game can continue after closing and reopening the app.
