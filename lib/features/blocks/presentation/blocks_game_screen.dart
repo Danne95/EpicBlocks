@@ -28,11 +28,6 @@ class BlocksGameScreen extends StatelessWidget {
         title: const Text('EpicBlocks'),
         actions: [
           IconButton(
-            tooltip: 'New game',
-            icon: const Icon(Icons.refresh),
-            onPressed: controller.newGame,
-          ),
-          IconButton(
             tooltip: 'Settings',
             icon: const Icon(Icons.settings),
             onPressed: () => openSettings(context),
@@ -169,7 +164,6 @@ class _BoardView extends StatefulWidget {
 }
 
 class _BoardViewState extends State<_BoardView> {
-  final GlobalKey _boardKey = GlobalKey();
   BlockPosition? _hoverOrigin;
   BlockShape? _hoverShape;
 
@@ -177,88 +171,70 @@ class _BoardViewState extends State<_BoardView> {
   Widget build(BuildContext context) {
     final controller = context.watch<BlocksController>();
 
-    return DragTarget<_ShapeDragData>(
-      key: const ValueKey('blocks-board-target'),
-      onWillAcceptWithDetails: (details) {
-        final origin = _originForDrop(details.offset);
-        return origin != null &&
-            controller.board.canPlace(details.data.shape, origin);
-      },
-      onMove: (details) {
-        setState(() {
-          _hoverOrigin = _originForDrop(details.offset);
-          _hoverShape = details.data.shape;
-        });
-      },
-      onLeave: (_) {
-        setState(() {
-          _hoverOrigin = null;
-          _hoverShape = null;
-        });
-      },
-      onAcceptWithDetails: (details) async {
-        final origin = _originForDrop(details.offset);
-        if (origin == null) {
-          return;
-        }
-        setState(() {
-          _hoverOrigin = null;
-          _hoverShape = null;
-        });
-        await widget.onDrop(details.data, origin);
-      },
-      builder: (context, _, _) {
-        return SizedBox.square(
-          key: _boardKey,
-          dimension: widget.boardSize,
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              color: _boardBackground(context),
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: _gridBorder(context), width: 2),
+    return SizedBox.square(
+      dimension: widget.boardSize,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: _boardBackground(context),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: _gridBorder(context), width: 2),
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(6),
+          child: GridView.builder(
+            key: const ValueKey('blocks-board'),
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: BlocksBoard.size,
             ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(6),
-              child: GridView.builder(
-                key: const ValueKey('blocks-board'),
-                physics: const NeverScrollableScrollPhysics(),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: BlocksBoard.size,
-                ),
-                itemCount: BlocksBoard.size * BlocksBoard.size,
-                itemBuilder: (context, index) {
-                  final row = index ~/ BlocksBoard.size;
-                  final column = index % BlocksBoard.size;
-                  final cell = controller.board.cells[row][column];
-                  final preview = _hoverOrigin;
-                  final previewShape = _hoverShape;
-                  final isPreview =
-                      preview != null &&
-                      previewShape != null &&
-                      _isShapeCell(previewShape, preview, row, column) &&
-                      controller.board.canPlace(previewShape, preview);
+            itemCount: BlocksBoard.size * BlocksBoard.size,
+            itemBuilder: (context, index) {
+              final row = index ~/ BlocksBoard.size;
+              final column = index % BlocksBoard.size;
+              final origin = BlockPosition(row, column);
+              final cell = controller.board.cells[row][column];
+              final preview = _hoverOrigin;
+              final previewShape = _hoverShape;
+              final isPreview =
+                  preview != null &&
+                  previewShape != null &&
+                  _isShapeCell(previewShape, preview, row, column) &&
+                  controller.board.canPlace(previewShape, preview);
 
+              return DragTarget<_ShapeDragData>(
+                onWillAcceptWithDetails: (details) {
+                  return controller.board.canPlace(details.data.shape, origin);
+                },
+                onMove: (details) {
+                  setState(() {
+                    _hoverOrigin = origin;
+                    _hoverShape = details.data.shape;
+                  });
+                },
+                onLeave: (_) {
+                  if (_hoverOrigin == origin) {
+                    setState(() {
+                      _hoverOrigin = null;
+                      _hoverShape = null;
+                    });
+                  }
+                },
+                onAcceptWithDetails: (details) async {
+                  setState(() {
+                    _hoverOrigin = null;
+                    _hoverShape = null;
+                  });
+                  await widget.onDrop(details.data, origin);
+                },
+                builder: (context, _, _) {
                   return _BoardCell(cell: cell, isPreview: isPreview);
                 },
-              ),
-            ),
+              );
+            },
           ),
-        );
-      },
+        ),
+      ),
     );
-  }
-
-  BlockPosition? _originForDrop(Offset globalOffset) {
-    final renderObject = _boardKey.currentContext?.findRenderObject();
-    if (renderObject is! RenderBox) {
-      return null;
-    }
-    final local = renderObject.globalToLocal(globalOffset);
-    final cellSize = widget.boardSize / BlocksBoard.size;
-    final row = (local.dy / cellSize).floor();
-    final column = (local.dx / cellSize).floor();
-    final position = BlockPosition(row, column);
-    return BlocksBoard.empty().contains(position) ? position : null;
   }
 
   bool _isShapeCell(
@@ -348,6 +324,9 @@ class _ShapeSlot extends StatelessWidget {
               ? Icon(Icons.check, color: colorScheme.outline)
               : Draggable<_ShapeDragData>(
                   data: _ShapeDragData(trayIndex: index, shape: currentShape),
+                  affinity: Axis.vertical,
+                  dragAnchorStrategy: pointerDragAnchorStrategy,
+                  feedbackOffset: Offset.zero,
                   feedback: Material(
                     color: Colors.transparent,
                     child: _ShapePreview(shape: currentShape, cellSize: 22),
@@ -433,7 +412,7 @@ class _GameOverPanel extends StatelessWidget {
             const SizedBox(height: 12),
             FilledButton.icon(
               onPressed: onRestart,
-              icon: const Icon(Icons.refresh),
+              icon: const Icon(Icons.play_arrow),
               label: const Text('new game'),
             ),
           ],

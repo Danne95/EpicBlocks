@@ -65,8 +65,11 @@ class _UpdateSection extends StatelessWidget {
     final state = controller.state;
     final isBusy =
         state == AppUpdateButtonState.checking ||
+        state == AppUpdateButtonState.downloading ||
         state == AppUpdateButtonState.gettingUpdate;
-    final canGetUpdate = state == AppUpdateButtonState.updateAvailable;
+    final canGetUpdate =
+        state == AppUpdateButtonState.updateAvailable ||
+        state == AppUpdateButtonState.readyToInstall;
     final isUpToDate = state == AppUpdateButtonState.upToDate;
 
     return Column(
@@ -97,8 +100,10 @@ class _UpdateSection extends StatelessWidget {
   IconData _iconForState(AppUpdateButtonState state) {
     return switch (state) {
       AppUpdateButtonState.upToDate => Icons.check,
-      AppUpdateButtonState.updateAvailable => Icons.system_update_alt,
+      AppUpdateButtonState.updateAvailable ||
+      AppUpdateButtonState.readyToInstall => Icons.error_outline,
       AppUpdateButtonState.checking ||
+      AppUpdateButtonState.downloading ||
       AppUpdateButtonState.gettingUpdate => Icons.hourglass_empty,
       AppUpdateButtonState.failed => Icons.error_outline,
       AppUpdateButtonState.idle => Icons.system_update,
@@ -108,8 +113,10 @@ class _UpdateSection extends StatelessWidget {
   String _labelForState(AppUpdateButtonState state) {
     return switch (state) {
       AppUpdateButtonState.upToDate => 'up to date',
-      AppUpdateButtonState.updateAvailable => 'get update',
+      AppUpdateButtonState.updateAvailable ||
+      AppUpdateButtonState.readyToInstall => 'get update',
       AppUpdateButtonState.checking => 'Checking...',
+      AppUpdateButtonState.downloading ||
       AppUpdateButtonState.gettingUpdate => 'Getting update...',
       AppUpdateButtonState.failed ||
       AppUpdateButtonState.idle => 'Check for updates',

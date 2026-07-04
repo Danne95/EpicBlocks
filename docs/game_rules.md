@@ -8,7 +8,7 @@ and clearing full rows and columns.
 ## Player actions
 
 - Drag one of the three available shapes onto the board.
-- Start a new game from the app bar or game-over panel.
+- Start a new game from the game-over panel.
 - Open Settings from the app-bar cog.
 
 ## Valid moves
@@ -27,6 +27,8 @@ occupied cell.
 
 The player has three shapes at a time. Placed shapes disappear from the tray.
 When all three slots are empty, the game deals three new shapes.
+Shape colors are stable by shape family, so rotated versions of the same shape
+use the same light-mode and dark-mode colors.
 
 ## Clears
 

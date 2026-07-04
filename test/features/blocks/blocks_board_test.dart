@@ -19,6 +19,23 @@ void main() {
     }
   });
 
+  test('shape orientations share a family color', () {
+    expectSameFamilyColor(['bar_2_h', 'bar_2_v']);
+    expectSameFamilyColor(['bar_3_h', 'bar_3_v']);
+    expectSameFamilyColor(['bar_4_h', 'bar_4_v']);
+    expectSameFamilyColor(['bar_5_h', 'bar_5_v']);
+    expectSameFamilyColor(['corner_tl', 'corner_tr', 'corner_bl', 'corner_br']);
+    expectSameFamilyColor([
+      'l_4_down_right',
+      'l_4_down_left',
+      'l_4_right_down',
+      'l_4_right_up',
+    ]);
+    expectSameFamilyColor(['t_up', 't_down', 't_left', 't_right']);
+    expectSameFamilyColor(['s_h', 's_v']);
+    expectSameFamilyColor(['z_h', 'z_v']);
+  });
+
   test('valid and invalid placements are detected', () {
     final board = BlocksBoard.empty();
     final shape = BlockShapes.all.firstWhere((shape) => shape.id == 'bar_3_h');
@@ -80,4 +97,17 @@ void main() {
 
     expect(BlocksBoard(cells).canPlaceAnywhere(single), isFalse);
   });
+}
+
+void expectSameFamilyColor(List<String> ids) {
+  final shapes = ids.map(
+    (id) => BlockShapes.all.firstWhere((shape) => shape.id == id),
+  );
+  final lightColors = shapes
+      .map((shape) => shape.lightColor.toARGB32())
+      .toSet();
+  final darkColors = shapes.map((shape) => shape.darkColor.toARGB32()).toSet();
+
+  expect(lightColors, hasLength(1));
+  expect(darkColors, hasLength(1));
 }

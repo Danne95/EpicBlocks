@@ -13,6 +13,7 @@ class EpicBlocksApp extends StatelessWidget {
   const EpicBlocksApp({
     required this.settingsController,
     required this.blocksController,
+    this.updateController,
     super.key,
   });
 
@@ -22,15 +23,23 @@ class EpicBlocksApp extends StatelessWidget {
   /// Game controller.
   final BlocksController blocksController;
 
+  /// Optional update controller used by tests.
+  final AppUpdateController? updateController;
+
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider.value(value: settingsController),
         ChangeNotifierProvider.value(value: blocksController),
-        ChangeNotifierProvider(
-          create: (_) => AppUpdateController(AppUpdateService()),
-        ),
+        if (updateController == null)
+          ChangeNotifierProvider(
+            create: (_) => AppUpdateController(AppUpdateService()),
+          )
+        else
+          ChangeNotifierProvider<AppUpdateController>.value(
+            value: updateController!,
+          ),
       ],
       child: Consumer<SettingsController>(
         builder: (context, settings, _) {

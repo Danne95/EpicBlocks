@@ -43,3 +43,12 @@ on shape definitions.
 ## State management
 
 Provider is used for app and game controllers.
+
+## Direct APK updates
+
+Direct APK updates use `settings presentation -> app update controller -> app
+update service -> GitHub Releases / Android package installer`.
+
+Update checks are the only intentional network operation. They are
+user-initiated from Settings, read public GitHub Releases, and keep the visible
+player UI limited to `up to date` or `get update`.

@@ -19,6 +19,7 @@
 5. A used shape disappears from the tray.
 6. When all three tray slots are used, three new shapes are dealt.
 7. The game ends when no remaining tray shape can fit anywhere on the board.
+8. The player can start a new game from the game-over panel.
 
 ## Settings
 
@@ -32,8 +33,10 @@
 1. The player opens Settings.
 2. The player taps Check for updates.
 3. The app checks `Danne95/EpicBlocks` latest GitHub Release.
-4. If no newer release exists, the button shows `up to date`.
-5. If a newer release exists, the button shows `get update`.
-6. The APK downloads only after user action.
-7. Android install permission is opened if needed.
-8. Android's package installer handles installation.
+4. The release must include `EpicBlocks.apk`, an asset labeled
+   `EpicBlocks.apk`, or GitHub Actions' default `app-release.apk`.
+5. If no newer release exists, the button shows `up to date`.
+6. If a newer release exists, the button shows `get update`.
+7. The APK downloads only after user action.
+8. Android install permission is opened if needed.
+9. Android's package installer handles installation.

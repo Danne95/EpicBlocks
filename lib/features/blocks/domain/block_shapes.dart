@@ -6,42 +6,67 @@ import 'package:flutter/material.dart';
 class BlockShapes {
   const BlockShapes._();
 
+  static const _singleLight = Color(0xFF2563EB);
+  static const _singleDark = Color(0xFF60A5FA);
+  static const _bar2Light = Color(0xFF059669);
+  static const _bar2Dark = Color(0xFF34D399);
+  static const _bar3Light = Color(0xFFDC2626);
+  static const _bar3Dark = Color(0xFFF87171);
+  static const _bar4Light = Color(0xFF9333EA);
+  static const _bar4Dark = Color(0xFFC084FC);
+  static const _bar5Light = Color(0xFFEA580C);
+  static const _bar5Dark = Color(0xFFFB923C);
+  static const _square2Light = Color(0xFF0891B2);
+  static const _square2Dark = Color(0xFF67E8F9);
+  static const _square3Light = Color(0xFF0D9488);
+  static const _square3Dark = Color(0xFF5EEAD4);
+  static const _cornerLight = Color(0xFFE11D48);
+  static const _cornerDark = Color(0xFFFB7185);
+  static const _largeLLight = Color(0xFF4F46E5);
+  static const _largeLDark = Color(0xFFA5B4FC);
+  static const _tLight = Color(0xFFA16207);
+  static const _tDark = Color(0xFFFACC15);
+  static const _sLight = Color(0xFF15803D);
+  static const _sDark = Color(0xFF86EFAC);
+  static const _zLight = Color(0xFF0F766E);
+  static const _zDark = Color(0xFF99F6E4);
+
   /// Full 1010-like shape catalog.
   static const all = <BlockShape>[
     BlockShape(
       id: 'single',
       label: 'Single block',
       cells: [BlockPosition(0, 0)],
-      lightColor: Color(0xFF2563EB),
-      darkColor: Color(0xFF60A5FA),
+      lightColor: _singleLight,
+      darkColor: _singleDark,
     ),
     BlockShape(
       id: 'bar_2_h',
       label: 'Two horizontal',
       cells: [BlockPosition(0, 0), BlockPosition(0, 1)],
-      lightColor: Color(0xFF059669),
-      darkColor: Color(0xFF34D399),
+      lightColor: _bar2Light,
+      darkColor: _bar2Dark,
     ),
     BlockShape(
       id: 'bar_2_v',
       label: 'Two vertical',
       cells: [BlockPosition(0, 0), BlockPosition(1, 0)],
-      lightColor: Color(0xFF047857),
-      darkColor: Color(0xFF6EE7B7),
+      lightColor: _bar2Light,
+      darkColor: _bar2Dark,
     ),
     BlockShape(
       id: 'bar_3_h',
       label: 'Three horizontal',
       cells: [BlockPosition(0, 0), BlockPosition(0, 1), BlockPosition(0, 2)],
-      lightColor: Color(0xFFDC2626),
-      darkColor: Color(0xFFF87171),
+      lightColor: _bar3Light,
+      darkColor: _bar3Dark,
     ),
     BlockShape(
       id: 'bar_3_v',
       label: 'Three vertical',
       cells: [BlockPosition(0, 0), BlockPosition(1, 0), BlockPosition(2, 0)],
-      lightColor: Color(0xFFB91C1C),
-      darkColor: Color(0xFFFCA5A5),
+      lightColor: _bar3Light,
+      darkColor: _bar3Dark,
     ),
     BlockShape(
       id: 'bar_4_h',
@@ -52,8 +77,8 @@ class BlockShapes {
         BlockPosition(0, 2),
         BlockPosition(0, 3),
       ],
-      lightColor: Color(0xFF9333EA),
-      darkColor: Color(0xFFC084FC),
+      lightColor: _bar4Light,
+      darkColor: _bar4Dark,
     ),
     BlockShape(
       id: 'bar_4_v',
@@ -64,8 +89,8 @@ class BlockShapes {
         BlockPosition(2, 0),
         BlockPosition(3, 0),
       ],
-      lightColor: Color(0xFF7E22CE),
-      darkColor: Color(0xFFD8B4FE),
+      lightColor: _bar4Light,
+      darkColor: _bar4Dark,
     ),
     BlockShape(
       id: 'bar_5_h',
@@ -77,8 +102,8 @@ class BlockShapes {
         BlockPosition(0, 3),
         BlockPosition(0, 4),
       ],
-      lightColor: Color(0xFFEA580C),
-      darkColor: Color(0xFFFB923C),
+      lightColor: _bar5Light,
+      darkColor: _bar5Dark,
     ),
     BlockShape(
       id: 'bar_5_v',
@@ -90,8 +115,8 @@ class BlockShapes {
         BlockPosition(3, 0),
         BlockPosition(4, 0),
       ],
-      lightColor: Color(0xFFC2410C),
-      darkColor: Color(0xFFFDBA74),
+      lightColor: _bar5Light,
+      darkColor: _bar5Dark,
     ),
     BlockShape(
       id: 'square_2',
@@ -102,8 +127,8 @@ class BlockShapes {
         BlockPosition(1, 0),
         BlockPosition(1, 1),
       ],
-      lightColor: Color(0xFF0891B2),
-      darkColor: Color(0xFF67E8F9),
+      lightColor: _square2Light,
+      darkColor: _square2Dark,
     ),
     BlockShape(
       id: 'square_3',
@@ -119,36 +144,36 @@ class BlockShapes {
         BlockPosition(2, 1),
         BlockPosition(2, 2),
       ],
-      lightColor: Color(0xFF0D9488),
-      darkColor: Color(0xFF5EEAD4),
+      lightColor: _square3Light,
+      darkColor: _square3Dark,
     ),
     BlockShape(
       id: 'corner_tl',
       label: 'Corner top left',
       cells: [BlockPosition(0, 0), BlockPosition(1, 0), BlockPosition(1, 1)],
-      lightColor: Color(0xFFE11D48),
-      darkColor: Color(0xFFFB7185),
+      lightColor: _cornerLight,
+      darkColor: _cornerDark,
     ),
     BlockShape(
       id: 'corner_tr',
       label: 'Corner top right',
       cells: [BlockPosition(0, 1), BlockPosition(1, 0), BlockPosition(1, 1)],
-      lightColor: Color(0xFFBE123C),
-      darkColor: Color(0xFFFFA3B5),
+      lightColor: _cornerLight,
+      darkColor: _cornerDark,
     ),
     BlockShape(
       id: 'corner_bl',
       label: 'Corner bottom left',
       cells: [BlockPosition(0, 0), BlockPosition(0, 1), BlockPosition(1, 0)],
-      lightColor: Color(0xFFDB2777),
-      darkColor: Color(0xFFF9A8D4),
+      lightColor: _cornerLight,
+      darkColor: _cornerDark,
     ),
     BlockShape(
       id: 'corner_br',
       label: 'Corner bottom right',
       cells: [BlockPosition(0, 0), BlockPosition(0, 1), BlockPosition(1, 1)],
-      lightColor: Color(0xFFC026D3),
-      darkColor: Color(0xFFF0ABFC),
+      lightColor: _cornerLight,
+      darkColor: _cornerDark,
     ),
     BlockShape(
       id: 'l_4_down_right',
@@ -159,8 +184,8 @@ class BlockShapes {
         BlockPosition(2, 0),
         BlockPosition(2, 1),
       ],
-      lightColor: Color(0xFF4F46E5),
-      darkColor: Color(0xFFA5B4FC),
+      lightColor: _largeLLight,
+      darkColor: _largeLDark,
     ),
     BlockShape(
       id: 'l_4_down_left',
@@ -171,8 +196,8 @@ class BlockShapes {
         BlockPosition(2, 0),
         BlockPosition(2, 1),
       ],
-      lightColor: Color(0xFF4338CA),
-      darkColor: Color(0xFFC7D2FE),
+      lightColor: _largeLLight,
+      darkColor: _largeLDark,
     ),
     BlockShape(
       id: 'l_4_right_down',
@@ -183,8 +208,8 @@ class BlockShapes {
         BlockPosition(0, 2),
         BlockPosition(1, 0),
       ],
-      lightColor: Color(0xFF1D4ED8),
-      darkColor: Color(0xFF93C5FD),
+      lightColor: _largeLLight,
+      darkColor: _largeLDark,
     ),
     BlockShape(
       id: 'l_4_right_up',
@@ -195,8 +220,8 @@ class BlockShapes {
         BlockPosition(0, 2),
         BlockPosition(1, 2),
       ],
-      lightColor: Color(0xFF1E40AF),
-      darkColor: Color(0xFFBFDBFE),
+      lightColor: _largeLLight,
+      darkColor: _largeLDark,
     ),
     BlockShape(
       id: 't_up',
@@ -207,8 +232,8 @@ class BlockShapes {
         BlockPosition(0, 2),
         BlockPosition(1, 1),
       ],
-      lightColor: Color(0xFFA16207),
-      darkColor: Color(0xFFFACC15),
+      lightColor: _tLight,
+      darkColor: _tDark,
     ),
     BlockShape(
       id: 't_down',
@@ -219,8 +244,8 @@ class BlockShapes {
         BlockPosition(1, 1),
         BlockPosition(1, 2),
       ],
-      lightColor: Color(0xFF854D0E),
-      darkColor: Color(0xFFFDE047),
+      lightColor: _tLight,
+      darkColor: _tDark,
     ),
     BlockShape(
       id: 't_left',
@@ -231,8 +256,8 @@ class BlockShapes {
         BlockPosition(1, 1),
         BlockPosition(2, 0),
       ],
-      lightColor: Color(0xFF92400E),
-      darkColor: Color(0xFFFCD34D),
+      lightColor: _tLight,
+      darkColor: _tDark,
     ),
     BlockShape(
       id: 't_right',
@@ -243,8 +268,8 @@ class BlockShapes {
         BlockPosition(1, 1),
         BlockPosition(2, 1),
       ],
-      lightColor: Color(0xFF78350F),
-      darkColor: Color(0xFFFDE68A),
+      lightColor: _tLight,
+      darkColor: _tDark,
     ),
     BlockShape(
       id: 's_h',
@@ -255,8 +280,8 @@ class BlockShapes {
         BlockPosition(1, 0),
         BlockPosition(1, 1),
       ],
-      lightColor: Color(0xFF15803D),
-      darkColor: Color(0xFF86EFAC),
+      lightColor: _sLight,
+      darkColor: _sDark,
     ),
     BlockShape(
       id: 's_v',
@@ -267,8 +292,8 @@ class BlockShapes {
         BlockPosition(1, 1),
         BlockPosition(2, 1),
       ],
-      lightColor: Color(0xFF166534),
-      darkColor: Color(0xFFBBF7D0),
+      lightColor: _sLight,
+      darkColor: _sDark,
     ),
     BlockShape(
       id: 'z_h',
@@ -279,8 +304,8 @@ class BlockShapes {
         BlockPosition(1, 1),
         BlockPosition(1, 2),
       ],
-      lightColor: Color(0xFF0F766E),
-      darkColor: Color(0xFF99F6E4),
+      lightColor: _zLight,
+      darkColor: _zDark,
     ),
     BlockShape(
       id: 'z_v',
@@ -291,8 +316,8 @@ class BlockShapes {
         BlockPosition(1, 1),
         BlockPosition(2, 0),
       ],
-      lightColor: Color(0xFF115E59),
-      darkColor: Color(0xFFCCFBF1),
+      lightColor: _zLight,
+      darkColor: _zDark,
     ),
   ];
 }

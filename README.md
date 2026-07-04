@@ -17,6 +17,14 @@ flutter pub get
 flutter run
 ```
 
+For local debug without an Android device, use the Windows runner:
+
+```powershell
+flutter run -d windows
+```
+
+Android remains the release target.
+
 ## Verify
 
 ```powershell
@@ -33,10 +41,14 @@ GitHub Actions with the stable signing secrets documented in
 ## Release
 
 The release workflow publishes `EpicBlocks.apk` to
-`Danne95/EpicBlocks` GitHub Releases. Before a public release:
+`Danne95/EpicBlocks` GitHub Releases. The in-app updater accepts `EpicBlocks.apk`,
+an asset labeled `EpicBlocks.apk`, or the default `app-release.apk`. Before a
+public release:
 
 - Increase `version` in `pubspec.yaml`.
 - Update `AppMetadata.versionLabel`.
 - Update player-facing patch notes.
 - Run analyze and tests.
+- Make sure the GitHub Actions release-signing secrets are configured.
+- Always increase Android's build number in `pubspec.yaml`.
 - Confirm Android update behavior on a real device when release wiring changes.
