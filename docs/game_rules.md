@@ -8,6 +8,7 @@ and clearing full rows and columns.
 ## Player actions
 
 - Drag one of the three available shapes onto the board.
+- Use the centered preview to choose where the shape will land.
 - Start a new game from the game-over panel.
 - Open Settings from the app-bar cog.
 

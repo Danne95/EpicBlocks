@@ -4,6 +4,9 @@ import 'package:epic_blocks/app/application/settings_controller.dart';
 import 'package:epic_blocks/app/data/app_update_service.dart';
 import 'package:epic_blocks/app/data/settings_repository.dart';
 import 'package:epic_blocks/features/blocks/application/blocks_controller.dart';
+import 'package:epic_blocks/features/blocks/domain/block_position.dart';
+import 'package:epic_blocks/features/blocks/domain/block_shapes.dart';
+import 'package:epic_blocks/features/blocks/presentation/blocks_game_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -20,6 +23,71 @@ void main() {
     expect(find.byKey(const ValueKey('blocks-board')), findsOneWidget);
     expect(find.byKey(const ValueKey('shape-tray')), findsOneWidget);
     expect(find.byIcon(Icons.refresh), findsNothing);
+  });
+
+  testWidgets('shape can be dragged from the center of its full tray slot', (
+    tester,
+  ) async {
+    final controller = await _pumpApp(tester);
+    final slotCenter = tester.getCenter(
+      find.byKey(const ValueKey('shape-slot-0')),
+    );
+    final boardCenter = tester.getCenter(
+      find.byKey(const ValueKey('blocks-board')),
+    );
+
+    final gesture = await tester.startGesture(slotCenter);
+    await tester.pump(const Duration(milliseconds: 100));
+    await gesture.moveTo(boardCenter);
+    await tester.pump();
+    await gesture.up();
+    await tester.pumpAndSettle();
+
+    expect(controller.score, greaterThan(0));
+    expect(controller.availableShapes[0], isNull);
+    expect(
+      controller.board.cells.expand((row) => row).whereType<Object>(),
+      isNotEmpty,
+    );
+  });
+
+  test(
+    'centered drag origin maps the pointer to a centered shape placement',
+    () {
+      final square = BlockShapes.all.firstWhere(
+        (shape) => shape.id == 'square_3',
+      );
+
+      expect(
+        centeredShapeDragOrigin(
+          boardLocalPosition: const Offset(150, 150),
+          shape: square,
+          cellSize: 30,
+        ),
+        const BlockPosition(4, 4),
+      );
+    },
+  );
+
+  test('centered drag origin keeps board edges reachable', () {
+    final bar = BlockShapes.all.firstWhere((shape) => shape.id == 'bar_5_h');
+
+    expect(
+      centeredShapeDragOrigin(
+        boardLocalPosition: Offset.zero,
+        shape: bar,
+        cellSize: 30,
+      ),
+      const BlockPosition(0, 0),
+    );
+    expect(
+      centeredShapeDragOrigin(
+        boardLocalPosition: const Offset(300, 300),
+        shape: bar,
+        cellSize: 30,
+      ),
+      const BlockPosition(9, 5),
+    );
   });
 
   testWidgets(

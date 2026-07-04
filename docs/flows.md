@@ -12,6 +12,7 @@
 
 1. The player sees a 10 by 10 board and three available shapes.
 2. The player drags a shape from the tray onto the board.
+   The placement preview is centered around the drag position.
 3. The controller accepts the move only if every cell fits and lands on empty
    board cells.
 4. Accepted moves add placement points, clear full rows and columns, and add

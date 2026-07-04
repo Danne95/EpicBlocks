@@ -69,7 +69,10 @@ class BlocksGameScreen extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 16),
-                      _ShapeTray(shapes: controller.availableShapes),
+                      _ShapeTray(
+                        shapes: controller.availableShapes,
+                        boardCellSize: boardSize / BlocksBoard.size,
+                      ),
                       const SizedBox(height: 16),
                       if (controller.isGameOver)
                         _GameOverPanel(
@@ -164,6 +167,7 @@ class _BoardView extends StatefulWidget {
 }
 
 class _BoardViewState extends State<_BoardView> {
+  final _boardKey = GlobalKey();
   BlockPosition? _hoverOrigin;
   BlockShape? _hoverShape;
 
@@ -172,6 +176,7 @@ class _BoardViewState extends State<_BoardView> {
     final controller = context.watch<BlocksController>();
 
     return SizedBox.square(
+      key: _boardKey,
       dimension: widget.boardSize,
       child: DecoratedBox(
         decoration: BoxDecoration(
@@ -181,52 +186,64 @@ class _BoardViewState extends State<_BoardView> {
         ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(6),
-          child: GridView.builder(
-            key: const ValueKey('blocks-board'),
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: BlocksBoard.size,
-            ),
-            itemCount: BlocksBoard.size * BlocksBoard.size,
-            itemBuilder: (context, index) {
-              final row = index ~/ BlocksBoard.size;
-              final column = index % BlocksBoard.size;
-              final origin = BlockPosition(row, column);
-              final cell = controller.board.cells[row][column];
-              final preview = _hoverOrigin;
-              final previewShape = _hoverShape;
-              final isPreview =
-                  preview != null &&
-                  previewShape != null &&
-                  _isShapeCell(previewShape, preview, row, column) &&
-                  controller.board.canPlace(previewShape, preview);
+          child: DragTarget<_ShapeDragData>(
+            hitTestBehavior: HitTestBehavior.opaque,
+            onWillAcceptWithDetails: (details) {
+              return _originForGlobalOffset(
+                    details.data.dragCenterOffset + details.offset,
+                    details.data.shape,
+                  ) !=
+                  null;
+            },
+            onMove: (details) {
+              final origin = _originForGlobalOffset(
+                details.data.dragCenterOffset + details.offset,
+                details.data.shape,
+              );
+              setState(() {
+                _hoverOrigin = origin;
+                _hoverShape = origin == null ? null : details.data.shape;
+              });
+            },
+            onLeave: (_) {
+              setState(() {
+                _hoverOrigin = null;
+                _hoverShape = null;
+              });
+            },
+            onAcceptWithDetails: (details) async {
+              final origin = _originForGlobalOffset(
+                details.data.dragCenterOffset + details.offset,
+                details.data.shape,
+              );
+              setState(() {
+                _hoverOrigin = null;
+                _hoverShape = null;
+              });
+              if (origin != null) {
+                await widget.onDrop(details.data, origin);
+              }
+            },
+            builder: (context, _, _) {
+              return GridView.builder(
+                key: const ValueKey('blocks-board'),
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: BlocksBoard.size,
+                ),
+                itemCount: BlocksBoard.size * BlocksBoard.size,
+                itemBuilder: (context, index) {
+                  final row = index ~/ BlocksBoard.size;
+                  final column = index % BlocksBoard.size;
+                  final cell = controller.board.cells[row][column];
+                  final preview = _hoverOrigin;
+                  final previewShape = _hoverShape;
+                  final isPreview =
+                      preview != null &&
+                      previewShape != null &&
+                      _isShapeCell(previewShape, preview, row, column) &&
+                      controller.board.canPlace(previewShape, preview);
 
-              return DragTarget<_ShapeDragData>(
-                onWillAcceptWithDetails: (details) {
-                  return controller.board.canPlace(details.data.shape, origin);
-                },
-                onMove: (details) {
-                  setState(() {
-                    _hoverOrigin = origin;
-                    _hoverShape = details.data.shape;
-                  });
-                },
-                onLeave: (_) {
-                  if (_hoverOrigin == origin) {
-                    setState(() {
-                      _hoverOrigin = null;
-                      _hoverShape = null;
-                    });
-                  }
-                },
-                onAcceptWithDetails: (details) async {
-                  setState(() {
-                    _hoverOrigin = null;
-                    _hoverShape = null;
-                  });
-                  await widget.onDrop(details.data, origin);
-                },
-                builder: (context, _, _) {
                   return _BoardCell(cell: cell, isPreview: isPreview);
                 },
               );
@@ -234,6 +251,20 @@ class _BoardViewState extends State<_BoardView> {
           ),
         ),
       ),
+    );
+  }
+
+  BlockPosition? _originForGlobalOffset(Offset globalOffset, BlockShape shape) {
+    final renderBox =
+        _boardKey.currentContext?.findRenderObject() as RenderBox?;
+    if (renderBox == null) {
+      return null;
+    }
+
+    return centeredShapeDragOrigin(
+      boardLocalPosition: renderBox.globalToLocal(globalOffset),
+      shape: shape,
+      cellSize: widget.boardSize / BlocksBoard.size,
     );
   }
 
@@ -276,9 +307,10 @@ class _BoardCell extends StatelessWidget {
 }
 
 class _ShapeTray extends StatelessWidget {
-  const _ShapeTray({required this.shapes});
+  const _ShapeTray({required this.shapes, required this.boardCellSize});
 
   final List<BlockShape?> shapes;
+  final double boardCellSize;
 
   @override
   Widget build(BuildContext context) {
@@ -293,7 +325,11 @@ class _ShapeTray extends StatelessWidget {
                 left: index == 0 ? 0 : 6,
                 right: index == shapes.length - 1 ? 0 : 6,
               ),
-              child: _ShapeSlot(index: index, shape: shapes[index]),
+              child: _ShapeSlot(
+                index: index,
+                shape: shapes[index],
+                boardCellSize: boardCellSize,
+              ),
             ),
           ),
       ],
@@ -302,46 +338,64 @@ class _ShapeTray extends StatelessWidget {
 }
 
 class _ShapeSlot extends StatelessWidget {
-  const _ShapeSlot({required this.index, required this.shape});
+  const _ShapeSlot({
+    required this.index,
+    required this.shape,
+    required this.boardCellSize,
+  });
 
   final int index;
   final BlockShape? shape;
+  final double boardCellSize;
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final currentShape = shape;
+    final feedbackCellSize = (boardCellSize * 0.92).clamp(26.0, 40.0);
+    final feedbackCenter = Offset(
+      currentShape == null ? 0 : currentShape.width * feedbackCellSize / 2,
+      currentShape == null ? 0 : currentShape.height * feedbackCellSize / 2,
+    );
+    final slot = DecoratedBox(
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Center(
+        child: currentShape == null
+            ? Icon(Icons.check, color: colorScheme.outline)
+            : Semantics(
+                label: currentShape.label,
+                child: _ShapePreview(shape: currentShape, cellSize: 18),
+              ),
+      ),
+    );
 
     return SizedBox(
+      key: ValueKey('shape-slot-$index'),
       height: 112,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: colorScheme.surfaceContainerHighest,
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Center(
-          child: currentShape == null
-              ? Icon(Icons.check, color: colorScheme.outline)
-              : Draggable<_ShapeDragData>(
-                  data: _ShapeDragData(trayIndex: index, shape: currentShape),
-                  affinity: Axis.vertical,
-                  dragAnchorStrategy: pointerDragAnchorStrategy,
-                  feedbackOffset: Offset.zero,
-                  feedback: Material(
-                    color: Colors.transparent,
-                    child: _ShapePreview(shape: currentShape, cellSize: 22),
-                  ),
-                  childWhenDragging: Opacity(
-                    opacity: 0.35,
-                    child: _ShapePreview(shape: currentShape, cellSize: 18),
-                  ),
-                  child: Semantics(
-                    label: currentShape.label,
-                    child: _ShapePreview(shape: currentShape, cellSize: 18),
-                  ),
+      child: currentShape == null
+          ? slot
+          : Draggable<_ShapeDragData>(
+              data: _ShapeDragData(
+                trayIndex: index,
+                shape: currentShape,
+                dragCenterOffset: feedbackCenter,
+              ),
+              affinity: Axis.vertical,
+              dragAnchorStrategy: (_, _, _) => feedbackCenter,
+              feedbackOffset: Offset.zero,
+              feedback: Material(
+                color: Colors.transparent,
+                child: _ShapePreview(
+                  shape: currentShape,
+                  cellSize: feedbackCellSize,
                 ),
-        ),
-      ),
+              ),
+              childWhenDragging: Opacity(opacity: 0.35, child: slot),
+              child: slot,
+            ),
     );
   }
 }
@@ -423,10 +477,32 @@ class _GameOverPanel extends StatelessWidget {
 }
 
 class _ShapeDragData {
-  const _ShapeDragData({required this.trayIndex, required this.shape});
+  const _ShapeDragData({
+    required this.trayIndex,
+    required this.shape,
+    required this.dragCenterOffset,
+  });
 
   final int trayIndex;
   final BlockShape shape;
+  final Offset dragCenterOffset;
+}
+
+/// Maps a drag pointer to the board origin that centers [shape] under it.
+@visibleForTesting
+BlockPosition centeredShapeDragOrigin({
+  required Offset boardLocalPosition,
+  required BlockShape shape,
+  required double cellSize,
+}) {
+  final row = ((boardLocalPosition.dy / cellSize) - (shape.height / 2)).round();
+  final column = ((boardLocalPosition.dx / cellSize) - (shape.width / 2))
+      .round();
+
+  return BlockPosition(
+    row.clamp(0, BlocksBoard.size - shape.height).toInt(),
+    column.clamp(0, BlocksBoard.size - shape.width).toInt(),
+  );
 }
 
 Color _shapeColor(BuildContext context, BlockShape shape) {

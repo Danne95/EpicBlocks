@@ -110,3 +110,21 @@ the same signing certificate and the new version code is higher.
 
 Debug signing was rejected for public updates because it can differ between
 local and CI builds and can cause Android's generic `App not installed` error.
+
+## 2026-07-04
+
+### Decision
+
+Center dragged shapes around the pointer and make each occupied tray slot the
+pickup target.
+
+### Reason
+
+The previous drag behavior required the player to hold the shape's top-left
+cell over the target board cell. That made touch placement awkward and made
+small previews hard to pick up.
+
+### Alternatives considered
+
+Keeping top-left placement with larger previews was rejected because it would
+still make the visible drop point differ from the player's natural grip point.
