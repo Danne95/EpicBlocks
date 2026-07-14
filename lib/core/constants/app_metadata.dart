@@ -3,10 +3,14 @@ class AppMetadata {
   const AppMetadata._();
 
   /// Human-readable app version.
-  static const versionLabel = '1.0.2';
+  static const versionLabel = '1.0.3';
 
   /// Player-facing patch notes for the current app version.
   static const patchNotes = [
+    PatchNote(
+      title: 'Release 1.0.3',
+      changes: ['Downloads now use the clear EpicBlocks.apk file name.'],
+    ),
     PatchNote(
       title: 'Release 1.0.2',
       changes: [

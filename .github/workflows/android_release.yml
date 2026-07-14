@@ -58,11 +58,16 @@ jobs:
           ANDROID_RELEASE_KEY_ALIAS: ${{ secrets.ANDROID_RELEASE_KEY_ALIAS }}
         run: flutter build apk --release
 
+      - name: Name release APK
+        run: |
+          mkdir -p release
+          cp build/app/outputs/flutter-apk/app-release.apk release/EpicBlocks.apk
+
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: epicblocks-apk
-          path: build/app/outputs/flutter-apk/app-release.apk
+          path: release/EpicBlocks.apk
 
   publish-release:
     name: Publish GitHub Release
@@ -93,7 +98,7 @@ jobs:
           RELEASE_TAG: ${{ steps.version.outputs.tag }}
         run: |
           if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
-            gh release upload "$RELEASE_TAG" release/app-release.apk#EpicBlocks.apk --clobber
+            gh release upload "$RELEASE_TAG" release/EpicBlocks.apk --clobber
           else
-            gh release create "$RELEASE_TAG" release/app-release.apk#EpicBlocks.apk --title "EpicBlocks $RELEASE_TAG" --generate-notes --target "$GITHUB_SHA"
+            gh release create "$RELEASE_TAG" release/EpicBlocks.apk --title "EpicBlocks $RELEASE_TAG" --generate-notes --target "$GITHUB_SHA"
           fi
